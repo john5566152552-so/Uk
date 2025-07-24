@@ -1,162 +1,110 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>FishBot - Sell Fish Smartly</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Murrel Fish Seeds - Login</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #e9f0f3;
       margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #0099cc, #66ccff);
+      color: #333;
     }
-    .app-bar {
-      background: #5c2d91;
+    header {
+      background: #004466;
       color: white;
       padding: 15px;
-      font-size: 20px;
       text-align: center;
-      font-weight: bold;
-      border-radius: 0 0 20px 20px;
+      font-size: 1.5rem;
     }
-    .chat-container {
+    .container {
       max-width: 500px;
-      margin: 20px auto;
+      margin: 40px auto;
       background: white;
-      border-radius: 20px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      height: 80vh;
-    }
-    #chat-box {
-      flex: 1;
       padding: 20px;
-      overflow-y: auto;
-    }
-    .message { margin-bottom: 15px; }
-    .user { text-align: right; color: #5c2d91; }
-    .bot { text-align: left; color: #333; }
-    .input-area {
-      display: flex;
-      padding: 10px;
-      border-top: 1px solid #ccc;
-      background: #f9f9f9;
-    }
-    input {
-      flex: 1;
-      padding: 10px;
-      border-radius: 25px;
-      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      text-align: center;
     }
     button {
-      padding: 10px 15px;
-      margin-left: 10px;
-      border: none;
-      background: #5c2d91;
+      background: #0077cc;
       color: white;
-      border-radius: 25px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
     }
-    .login-area {
-      text-align: center;
-      margin: 30px;
+    button:hover { background: #005fa3; }
+    .hidden { display: none; }
+    .fish-list img {
+      width: 100%;
+      border-radius: 10px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-
-<div class="app-bar">🐟 Fish Selling ChatBot</div>
-
-<div class="login-area" id="login-area">
-  <button onclick="login()">🔐 Login with Gmail</button>
-</div>
-
-<div class="chat-container" style="display:none;" id="chat-container">
-  <div id="chat-box"></div>
-  <div class="input-area">
-    <input type="text" id="user-input" placeholder="Ask about murrel fish, price, delivery..." />
-    <button onclick="sendMessage()">Send</button>
+  <header>🐟 Murrel Fish Seeds</header>
+  <div class="container">
+    <div id="login-section">
+      <h2>Login with Gmail</h2>
+      <button onclick="googleLogin()">Sign in with Google</button>
+    </div>
+    <div id="user-section" class="hidden">
+      <h2>Welcome, <span id="user-name"></span></h2>
+      <img id="user-photo" width="60" style="border-radius: 50%;" />
+      <p><button onclick="logout()">Logout</button></p>
+      <h3>Available Fish Seeds</h3>
+      <div class="fish-list">
+        <p><strong>Murrel Fish</strong> - ₹2.50 per seed</p>
+        <img src="https://i.imgur.com/h9B1pMx.jpeg" alt="Murrel Fish">
+        <p><strong>Rohu Fish</strong> - ₹1.20 per seed</p>
+        <img src="https://i.imgur.com/1jS5z2E.jpeg" alt="Rohu Fish">
+      </div>
+    </div>
   </div>
-</div>
 
-<script>
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyAc1tTKUNRzqcotzOOP15KIY-xtV8yDG3I",
-    authDomain: "email-cd1c2.firebaseapp.com",
-    projectId: "email-cd1c2",
-    storageBucket: "email-cd1c2.appspot.com",
-    messagingSenderId: "537790687163",
-    appId: "1:537790687163:web:b92f1b6b92a90bf4fa069e"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
 
-  let currentUser = null;
-  const API_KEY = "AIzaSyC0F3CQWrtd3S5ZBeyzGdz5xBbyofXBzTo";
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAc1tTKUNRzqcotzOOP15KIY-xtV8yDG3I",
+      authDomain: "email-cd1c2.firebaseapp.com",
+      projectId: "email-cd1c2",
+      storageBucket: "email-cd1c2.appspot.com",
+      messagingSenderId: "537790687163",
+      appId: "1:537790687163:web:b92f1b6b92a90bf4fa069e"
+    };
 
-  function login() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).then(res => {
-      currentUser = res.user;
-      document.getElementById("login-area").style.display = "none";
-      document.getElementById("chat-container").style.display = "flex";
-      loadChatHistory();
-    });
-  }
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-  async function loadChatHistory() {
-    const chatBox = document.getElementById("chat-box");
-    chatBox.innerHTML = "";
-    const snap = await db.collection("chats").doc(currentUser.email).collection("messages").orderBy("timestamp").get();
-    snap.forEach(doc => {
-      const data = doc.data();
-      chatBox.innerHTML += `<div class="message ${data.sender}"><b>${data.sender == 'user' ? 'You' : 'FishBot'}:</b> ${data.text}</div>`;
-    });
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
+    // Google Login
+    function googleLogin() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then(result => {
+          const user = result.user;
+          document.getElementById('user-name').innerText = user.displayName;
+          document.getElementById('user-photo').src = user.photoURL;
+          document.getElementById('login-section').classList.add('hidden');
+          document.getElementById('user-section').classList.remove('hidden');
+        })
+        .catch(error => console.error(error));
+    }
 
-  async function sendMessage() {
-    const input = document.getElementById("user-input");
-    const text = input.value.trim();
-    if (!text) return;
-    const chatBox = document.getElementById("chat-box");
-
-    // Save user message
-    await db.collection("chats").doc(currentUser.email).collection("messages").add({
-      text,
-      sender: "user",
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    chatBox.innerHTML += `<div class="message user"><b>You:</b> ${text}</div>`;
-    input.value = "";
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    // Gemini API call
-    const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + API_KEY, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts: [{ text }] }] })
-    });
-
-    const data = await res.json();
-    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't understand that.";
-
-    // Save bot reply
-    await db.collection("chats").doc(currentUser.email).collection("messages").add({
-      text: reply,
-      sender: "bot",
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    chatBox.innerHTML += `<div class="message bot"><b>FishBot:</b> ${reply}</div>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
-</script>
-
+    // Logout
+    function logout() {
+      auth.signOut();
+      document.getElementById('login-section').classList.remove('hidden');
+      document.getElementById('user-section').classList.add('hidden');
+    }
+  </script>
 </body>
 </html>
