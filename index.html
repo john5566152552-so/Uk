@@ -3,322 +3,88 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Murrel Fish Seeds - Gmail Login</title>
-  <style>
-    :root{
-      --primary:#0077cc;
-      --dark:#004466;
-      --bg1:#0099cc;
-      --bg2:#66ccff;
-    }
-    body{
-      margin:0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom, var(--bg1), var(--bg2));
-      color:#333;
-      min-height:100vh;
-    }
-    header{
-      background: var(--dark);
-      color:#fff;
-      padding:16px;
-      text-align:center;
-      font-size:1.4rem;
-    }
-    .container{
-      max-width:640px;
-      margin:32px auto;
-      background:#fff;
-      border-radius:12px;
-      box-shadow:0 4px 12px rgba(0,0,0,.15);
-      padding:24px 20px 32px;
-    }
-    button{
-      background: var(--primary);
-      color:#fff;
-      border:0;
-      border-radius:8px;
-      padding:12px 18px;
-      cursor:pointer;
-      font-size:1rem;
-    }
-    button.secondary{
-      background:#eee;color:#222;
-    }
-    button:hover{opacity:.9}
-    .hidden{display:none}
-    .fish-list img{
-      width:100%;
-      border-radius:10px;
-      margin:8px 0 18px;
-    }
-    #user-photo{
-      border-radius:50%;
-      width:80px;height:80px;object-fit:cover;
-    }
-    form{
-      margin-top:24px;
-      text-align:left;
-    }
-    label{
-      display:block;
-      font-weight:600;
-      margin:12px 0 6px;
-    }
-    input, select, textarea{
-      width:100%;
-      box-sizing:border-box;
-      padding:10px;
-      border:1px solid #ccc;
-      border-radius:6px;
-      font-size:1rem;
-    }
-    textarea{min-height:90px;resize:vertical;}
-    .error{
-      color:#c62828;
-      background:#ffebee;
-      border:1px solid #ffcdd2;
-      padding:8px 12px;border-radius:6px;margin:10px 0;
-      word-break:break-word;
-    }
-    .success{
-      color:#1b5e20;
-      background:#e8f5e9;
-      border:1px solid #c8e6c9;
-      padding:8px 12px;border-radius:6px;margin:10px 0;
-    }
-    ul#my-orders{
-      padding-left:20px;
-    }
-    small.muted{color:#777}
-  </style>
-</head>
-<body>
-  <header>🐟 Murrel Fish Seeds</header>
-
-  <div class="container">
-
-    <!-- Errors -->
-    <div id="global-error" class="error hidden"></div>
-
-    <!-- Login -->
-    <section id="login-section">
-      <h2>Login with Gmail</h2>
-      <button id="login-btn">Sign in with Google</button>
-      <p class="hidden" id="login-loading">Signing you in…</p>
-    </section>
-
-    <!-- User -->
-    <section id="user-section" class="hidden">
-      <h2>Welcome, <span id="user-name"></span></h2>
-      <img id="user-photo" alt="user"/>
-      <p><small class="muted" id="user-email"></small></p>
-      <button class="secondary" id="logout-btn">Logout</button>
-
-      <hr/>
-
-      <h3>Available Fish Seeds</h3>
-      <div class="fish-list">
-        <p><strong>Murrel Fish</strong> – ₹2.50 per seed</p>
-        <img src="https://i.imgur.com/h9B1pMx.jpeg" alt="Murrel Fish"/>
-
-        <p><strong>Rohu Fish</strong> – ₹1.20 per seed</p>
-        <img src="https://i.imgur.com/1jS5z2E.jpeg" alt="Rohu Fish"/>
-      </div>
-
-      <hr/>
-
-      <h3>Place an Order</h3>
-      <div id="order-status" class="hidden"></div>
-      <form id="order-form">
-        <label for="fishType">Fish type</label>
-        <select id="fishType" required>
-          <option value="Murrel">Murrel</option>
-          <option value="Rohu">Rohu</option>
-        </select>
-
-        <label for="quantity">Quantity (seeds)</label>
-        <input type="number" id="quantity" min="1" required/>
-
-        <label for="phone">Phone</label>
-        <input type="tel" id="phone" required/>
-
-        <label for="address">Address</label>
-        <textarea id="address" required></textarea>
-
-        <button type="submit">Submit Order</button>
-      </form>
-
-      <h3>Your Orders</h3>
-      <ul id="my-orders"></ul>
-    </section>
-  </div>
-
-  <!-- Firebase (Modular CDN) -->
+  <title>Murrel Fish Seeds - Login</title>
   <script type="module">
-    // ---- Firebase imports ----
+    // ---------------- FIREBASE -----------------
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import {
-      getAuth,
-      GoogleAuthProvider,
-      signInWithPopup,
-      signInWithRedirect,
-      getRedirectResult,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import {
-      getFirestore,
-      collection,
-      addDoc,
-      serverTimestamp,
-      query,
-      where,
-      orderBy,
-      onSnapshot
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
+      from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-    // ---- Your Firebase config ----
     const firebaseConfig = {
       apiKey: "AIzaSyAc1tTKUNRzqcotzOOP15KIY-xtV8yDG3I",
       authDomain: "email-cd1c2.firebaseapp.com",
       projectId: "email-cd1c2",
-      storageBucket: "email-cd1c2.appspot.com",
+      storageBucket: "email-cd1c2.firebasestorage.app",
       messagingSenderId: "537790687163",
-      appId: "1:537790687163:web:7dee4cb3cd91d2c6fa069e",
-      measurementId: "G-1QF3LGEQQ4"
+      appId: "1:537790687163:web:7dee4cb3cd91d2c6fa069e"
     };
 
-    // ---- Init Firebase ----
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
 
-    // ---- UI elements ----
-    const loginSection = document.getElementById('login-section');
-    const userSection = document.getElementById('user-section');
-    const loginBtn = document.getElementById('login-btn');
-    const logoutBtn = document.getElementById('logout-btn');
-    const userName = document.getElementById('user-name');
-    const userEmail = document.getElementById('user-email');
-    const userPhoto = document.getElementById('user-photo');
-    const orderForm = document.getElementById('order-form');
-    const orderStatus = document.getElementById('order-status');
-    const myOrders = document.getElementById('my-orders');
-    const globalError = document.getElementById('global-error');
-    const loginLoading = document.getElementById('login-loading');
+    // ---------------- EMAILJS -----------------
+    (function(){
+      emailjs.init("1JlfeljznFQoOpFDY");  // Your EmailJS Public Key
+    })();
 
-    // ---- Helpers ----
-    function show(el){ el.classList.remove('hidden'); }
-    function hide(el){ el.classList.add('hidden'); }
-    function setError(msg){
-      if(!msg){ hide(globalError); globalError.textContent=''; return; }
-      globalError.textContent = msg;
-      show(globalError);
-    }
-    function setOrderStatus(msg, type='success'){
-      orderStatus.textContent = msg;
-      orderStatus.className = type === 'error' ? 'error' : 'success';
-      show(orderStatus);
-      setTimeout(()=> hide(orderStatus), 5000);
+    // ---------------- SIGN UP -----------------
+    window.signup = function(){
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          alert("Signup successful! You can now login.");
+          sendEmailNotification(email, "New User Registered");
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
     }
 
-    // ---- Auth State ----
-    onAuthStateChanged(auth, async (user) => {
-      setError('');
-      if(user){
-        // Show user info
-        userName.textContent = user.displayName || '(No Name)';
-        userEmail.textContent = user.email || '';
-        userPhoto.src = user.photoURL || '';
-
-        hide(loginSection);
-        show(userSection);
-
-        // Load their orders live
-        const q = query(
-          collection(db, 'orders'),
-          where('uid', '==', user.uid),
-          orderBy('createdAt', 'desc')
-        );
-        onSnapshot(q, (snap) => {
-          myOrders.innerHTML = '';
-          snap.forEach(doc => {
-            const d = doc.data();
-            const li = document.createElement('li');
-            li.textContent = `${d.fishType} - ${d.quantity} seeds (${d.phone})`;
-            myOrders.appendChild(li);
-          });
+    // ---------------- LOGIN -----------------
+    window.login = function(){
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          alert("Login Successful!");
+          sendEmailNotification(email, "User Logged In");
+        })
+        .catch((error) => {
+          alert(error.message);
         });
+    }
 
-      }else{
-        // Not logged in
-        hide(userSection);
-        show(loginSection);
-      }
-    });
+    // ---------------- LOGOUT -----------------
+    window.logout = function(){
+      signOut(auth).then(() => {
+        alert("Logged out!");
+      });
+    }
 
-    // ---- Login ----
-    loginBtn.onclick = async () => {
-      setError('');
-      show(loginLoading);
-      try{
-        await signInWithPopup(auth, provider);
-      }catch(err){
-        // Fallback to redirect if popup blocked
-        if(err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment'){
-          await signInWithRedirect(auth, provider);
-        }else{
-          console.error(err);
-          setError(err.message);
-        }
-      }finally{
-        hide(loginLoading);
-      }
-    };
-
-    // Handle redirect result (if used)
-    getRedirectResult(auth).catch(err => setError(err.message));
-
-    // ---- Logout ----
-    logoutBtn.onclick = async () => {
-      await signOut(auth);
-    };
-
-    // ---- Order submit ----
-    orderForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const user = auth.currentUser;
-      if(!user){ setOrderStatus('Please login first', 'error'); return; }
-
-      const fishType = document.getElementById('fishType').value;
-      const quantity = parseInt(document.getElementById('quantity').value, 10);
-      const phone = document.getElementById('phone').value.trim();
-      const address = document.getElementById('address').value.trim();
-
-      if(!quantity || quantity < 1){
-        setOrderStatus('Quantity must be at least 1', 'error');
-        return;
-      }
-
-      try{
-        await addDoc(collection(db, 'orders'), {
-          uid: user.uid,
-          email: user.email,
-          fishType,
-          quantity,
-          phone,
-          address,
-          createdAt: serverTimestamp()
-        });
-        orderForm.reset();
-        setOrderStatus('✅ Order placed successfully!');
-      }catch(err){
-        console.error(err);
-        setOrderStatus('❌ Failed to place order: ' + err.message, 'error');
-      }
-    });
+    // ---------------- EMAIL NOTIFICATION -----------------
+    function sendEmailNotification(userEmail, message){
+      emailjs.send("service_a43e4wr","template_contactus",{
+        title: "Murrel Fish Seeds Login",
+        name: userEmail,
+        message: message
+      }).then(function(response) {
+        console.log("Email sent!", response.status, response.text);
+      }, function(error) {
+        console.log("Email error", error);
+      });
+    }
   </script>
+</head>
+<body style="font-family: Arial; background: #f0f0f0; text-align:center; padding:20px;">
+  <h1>Murrel Fish Seeds - Login</h1>
+  <div style="background:#fff; padding:20px; max-width:400px; margin:auto; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);">
+    <input type="email" id="email" placeholder="Enter Email" style="width:90%; padding:10px; margin:10px 0;"/><br/>
+    <input type="password" id="password" placeholder="Enter Password" style="width:90%; padding:10px; margin:10px 0;"/><br/>
+    <button onclick="signup()" style="padding:10px 20px; margin:5px; background:#28a745; color:white; border:none; border-radius:5px;">Sign Up</button>
+    <button onclick="login()" style="padding:10px 20px; margin:5px; background:#007bff; color:white; border:none; border-radius:5px;">Login</button>
+    <button onclick="logout()" style="padding:10px 20px; margin:5px; background:#dc3545; color:white; border:none; border-radius:5px;">Logout</button>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </body>
 </html>
