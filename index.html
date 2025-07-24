@@ -7,8 +7,13 @@
   <script type="module">
     // ---------------- FIREBASE -----------------
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
-      from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { 
+      getAuth, 
+      createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword, 
+      sendEmailVerification, 
+      signOut 
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAc1tTKUNRzqcotzOOP15KIY-xtV8yDG3I",
@@ -31,9 +36,12 @@
     window.signup = function(){
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
+
       createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
-          alert("Signup successful! You can now login.");
+          const user = userCredential.user;
+          alert("Signup successful! Verification email sent.");
+          sendVerificationEmail(user);
           sendEmailNotification(email, "New User Registered");
         })
         .catch((error) => {
@@ -45,10 +53,16 @@
     window.login = function(){
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
+
       signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
-          alert("Login Successful!");
-          sendEmailNotification(email, "User Logged In");
+          const user = userCredential.user;
+          if (user.emailVerified) {
+            alert("Login Successful!");
+            sendEmailNotification(email, "User Logged In");
+          } else {
+            alert("Please verify your email first.");
+          }
         })
         .catch((error) => {
           alert(error.message);
@@ -60,6 +74,14 @@
       signOut(auth).then(() => {
         alert("Logged out!");
       });
+    }
+
+    // ---------------- EMAIL VERIFICATION -----------------
+    function sendVerificationEmail(user){
+      sendEmailVerification(user)
+        .then(() => {
+          alert("Verification email sent to " + user.email);
+        });
     }
 
     // ---------------- EMAIL NOTIFICATION -----------------
