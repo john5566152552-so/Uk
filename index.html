@@ -1,112 +1,87 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Murrel Fish Seeds - Login</title>
-  <script type="module">
-    // ---------------- FIREBASE -----------------
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { 
-      getAuth, 
-      createUserWithEmailAndPassword, 
-      signInWithEmailAndPassword, 
-      sendEmailVerification, 
-      signOut 
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAc1tTKUNRzqcotzOOP15KIY-xtV8yDG3I",
-      authDomain: "email-cd1c2.firebaseapp.com",
-      projectId: "email-cd1c2",
-      storageBucket: "email-cd1c2.firebasestorage.app",
-      messagingSenderId: "537790687163",
-      appId: "1:537790687163:web:7dee4cb3cd91d2c6fa069e"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    // ---------------- EMAILJS -----------------
-    (function(){
-      emailjs.init("1JlfeljznFQoOpFDY");  // Your EmailJS Public Key
-    })();
-
-    // ---------------- SIGN UP -----------------
-    window.signup = function(){
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          alert("Signup successful! Verification email sent.");
-          sendVerificationEmail(user);
-          sendEmailNotification(email, "New User Registered");
-        })
-        .catch((error) => {
-          alert(error.message);
-        });
+  <title>1 to N Colored Boxes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f1f1f1;
     }
 
-    // ---------------- LOGIN -----------------
-    window.login = function(){
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-
-      signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          if (user.emailVerified) {
-            alert("Login Successful!");
-            sendEmailNotification(email, "User Logged In");
-          } else {
-            alert("Please verify your email first.");
-          }
-        })
-        .catch((error) => {
-          alert(error.message);
-        });
+    input[type="number"] {
+      padding: 10px;
+      font-size: 16px;
+      width: 100px;
     }
 
-    // ---------------- LOGOUT -----------------
-    window.logout = function(){
-      signOut(auth).then(() => {
-        alert("Logged out!");
-      });
+    button {
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      border: none;
+      margin-left: 10px;
     }
 
-    // ---------------- EMAIL VERIFICATION -----------------
-    function sendVerificationEmail(user){
-      sendEmailVerification(user)
-        .then(() => {
-          alert("Verification email sent to " + user.email);
-        });
+    #box-container {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    // ---------------- EMAIL NOTIFICATION -----------------
-    function sendEmailNotification(userEmail, message){
-      emailjs.send("service_a43e4wr","template_contactus",{
-        title: "Murrel Fish Seeds Login",
-        name: userEmail,
-        message: message
-      }).then(function(response) {
-        console.log("Email sent!", response.status, response.text);
-      }, function(error) {
-        console.log("Email error", error);
-      });
+    .box {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 20px;
+      border-radius: 8px;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Enter a number (N):</h2>
+  <input type="number" id="numberInput" min="1" />
+  <button onclick="generateBoxes()">Show Boxes</button>
+
+  <div id="box-container"></div>
+
+  <script>
+    function getRandomColor() {
+      const letters = "0123456789ABCDEF";
+      let color = "#";
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    function generateBoxes() {
+      const n = parseInt(document.getElementById("numberInput").value);
+      const container = document.getElementById("box-container");
+      container.innerHTML = "";
+
+      if (isNaN(n) || n < 1) {
+        alert("Please enter a valid number greater than 0");
+        return;
+      }
+
+      for (let i = 1; i <= n; i++) {
+        const box = document.createElement("div");
+        box.className = "box";
+        box.style.backgroundColor = getRandomColor();
+        box.textContent = i;
+        container.appendChild(box);
+      }
     }
   </script>
-</head>
-<body style="font-family: Arial; background: #f0f0f0; text-align:center; padding:20px;">
-  <h1>Murrel Fish Seeds - Login</h1>
-  <div style="background:#fff; padding:20px; max-width:400px; margin:auto; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);">
-    <input type="email" id="email" placeholder="Enter Email" style="width:90%; padding:10px; margin:10px 0;"/><br/>
-    <input type="password" id="password" placeholder="Enter Password" style="width:90%; padding:10px; margin:10px 0;"/><br/>
-    <button onclick="signup()" style="padding:10px 20px; margin:5px; background:#28a745; color:white; border:none; border-radius:5px;">Sign Up</button>
-    <button onclick="login()" style="padding:10px 20px; margin:5px; background:#007bff; color:white; border:none; border-radius:5px;">Login</button>
-    <button onclick="logout()" style="padding:10px 20px; margin:5px; background:#dc3545; color:white; border:none; border-radius:5px;">Logout</button>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
 </body>
 </html>
